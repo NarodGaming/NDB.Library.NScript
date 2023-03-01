@@ -24,9 +24,11 @@ namespace NDB.Library.NScript
 
         public static async Task ScriptHandler(SocketMessage message)
         {
+            if (message.Content.StartsWith(NDB_Main._config["stringprefix"]) == false) { return; }
             String commandToCheck = (message.Content.Split(" ")[0].Substring(1));
-            if (message.Content.StartsWith(NDB_Main._config["stringprefix"]) && fastCommands.Contains(commandToCheck))
+            if (fastCommands.Contains(commandToCheck))
             {
+                commandInterpreter = new();
                 SocketUserMessage? userMessage = message as SocketUserMessage;
                 SocketCommandContext context = new(NDB_Main._client, userMessage);
                 await commandInterpreter.commandInterpreter(context, commandToCheck);
@@ -41,7 +43,7 @@ namespace NDB.Library.NScript
         }
     }
 
-    public class NScriptCommandInterpreter : ModuleBase<SocketCommandContext>
+    public class NScriptCommandInterpreter
     {
         internal Dictionary<String, String> variables = new Dictionary<String, String>();
         public async Task commandInterpreter(SocketCommandContext context, String commandPassed)

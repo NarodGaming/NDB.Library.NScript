@@ -27,5 +27,19 @@ namespace NDB.Library.NScript
                 return ReplyAsync($"Failed to load {fileName}");
             }
         }
+
+        [Command("scriptsloaded")]
+        [Alias("loadedscripts", "scripts")]
+        [Summary("Shows all loaded scripts.")]
+        [Remarks("scriptsloaded")]
+        public Task showScripts()
+        {
+            String combineMessage = "";
+            foreach (String command in NScriptInterpreter.fastCommands)
+            {
+                combineMessage += command + Environment.NewLine;
+            }
+            return ReplyAsync(combineMessage);
+        }
     }
 }
