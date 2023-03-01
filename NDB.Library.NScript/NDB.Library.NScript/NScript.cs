@@ -17,19 +17,27 @@
                 if (scriptLineSpaced[1].Contains("="))
                 {
                     command.action = "set";
-                    for (int i = 2; i < scriptLineSpaced.Length; i++)
+                    if (scriptLineSpaced.Length == 3) { fullValue = scriptLineSpaced[2]; }
+                    else
                     {
-                        fullValue += scriptLineSpaced[i];
+                        for (int i = 1; i < scriptLineSpaced.Length; i++)
+                        {
+                            fullValue += " " + scriptLineSpaced[i];
+                        }
                     }
                 }
                 else
                 {
                     command.action = "do";
-                    for (int i = 1; i < scriptLineSpaced.Length; i++)
+                    if(scriptLineSpaced.Length == 2) { fullValue = scriptLineSpaced[1]; } else
                     {
-                        fullValue += scriptLineSpaced[i];
+                        for (int i = 1; i < scriptLineSpaced.Length; i++)
+                        {
+                            fullValue += " " + scriptLineSpaced[i];
+                        }
                     }
                 }
+                fullValue = fullValue.Trim();
                 command.value = fullValue;
                 commands.Add(command);
                 
