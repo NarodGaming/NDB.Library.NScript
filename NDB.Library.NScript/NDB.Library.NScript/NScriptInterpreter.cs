@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.Commands.Builders;
 using Discord.Interactions.Builders;
 using Discord.WebSocket;
@@ -48,6 +49,8 @@ namespace NDB.Library.NScript
         internal Dictionary<String, String> variables = new Dictionary<String, String>();
         public async Task commandInterpreter(SocketCommandContext context, String commandPassed)
         {
+            variables = new Dictionary<String, String>();
+            String[] strings = commandPassed.Split(" ");
             foreach (NScriptInterpreter.fullCommand fullCommand in NScriptInterpreter.commands)
             {
                 if(fullCommand.commandName == commandPassed)
@@ -59,27 +62,48 @@ namespace NDB.Library.NScript
                             if (commandLine.key == null)
                             {
                                 Console.WriteLine("Script attempted to set variable to null, not possible!");
-                            } else if (variables.ContainsKey(commandLine.key) == false)
+                            }
+                            else if (variables.ContainsKey(commandLine.key) == false)
                             {
                                 Console.WriteLine("Script attempted to set variable which doesn't exist!");
                             } else
                             {
-                                variables[commandLine.key] = commandLine.value;
+                                variables[commandLine.key] = (string)commandLine.value;
                             }
                         } else if (commandLine.action == "do") // command to complete (e.g. say text)
                         {
-                            if (commandLine.key == "var")
+                            switch (commandLine.key)
                             {
-                                variables.Add(commandLine.value, "");
-                            }
-                            if (commandLine.key == "say")
-                            {
-                                String messageToSay = commandLine.value;
-                                if (variables.ContainsKey(commandLine.value))
-                                {
-                                    messageToSay = variables[commandLine.value];
-                                }
-                                await context.Channel.SendMessageAsync(messageToSay);
+                                case "var":
+                                    if (commandLine.value.ToString().StartsWith("arg"))
+                                    {
+                                        Console.WriteLine("Script attempted to set argument variable.");
+                                    }
+                                    else
+                                    {
+                                        variables.Add((string)commandLine.value, "");
+                                    }
+                                    break;
+                                case "say":
+                                    String messageToSay = (string)commandLine.value;
+                                    if (variables.ContainsKey((string)commandLine.value))
+                                    {
+                                        messageToSay = variables[(string)commandLine.value];
+                                    }
+                                    await context.Channel.SendMessageAsync(messageToSay);
+                                    break;
+                                case "dm":
+                                    SocketUser user = context.User;
+                                    if (context.Message.MentionedUsers.Count >= 1) { user = context.Message.MentionedUsers.First(); }
+                                    String messageToDM = (string)commandLine.value;
+                                    if (variables.ContainsKey((string)commandLine.value))
+                                    {
+                                        messageToSay = variables[(string)commandLine.value];
+                                    }
+                                    await user.SendMessageAsync(messageToDM);
+                                    break;
+                                default:
+                                    break;
                             }
                         }
                     }

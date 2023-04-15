@@ -34,7 +34,7 @@ namespace NDB.Library.NScript
         [Remarks("scriptsloaded")]
         public Task showScripts()
         {
-            String combineMessage = "";
+            String combineMessage = "These are the loaded scripts:" + Environment.NewLine;
             foreach (String command in NScriptInterpreter.fastCommands)
             {
                 combineMessage += command + Environment.NewLine;
