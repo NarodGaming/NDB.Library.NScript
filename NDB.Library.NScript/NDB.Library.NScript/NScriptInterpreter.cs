@@ -32,7 +32,7 @@ namespace NDB.Library.NScript
                 commandInterpreter = new();
                 SocketUserMessage? userMessage = message as SocketUserMessage;
                 SocketCommandContext context = new(NDB_Main._client, userMessage);
-                await commandInterpreter.commandInterpreter(context, commandToCheck);
+                await commandInterpreter.commandInterpreter(context, commandToCheck, message.Content.Split(" "));
             }
         }
         public struct fullCommand
@@ -47,10 +47,17 @@ namespace NDB.Library.NScript
     public class NScriptCommandInterpreter
     {
         internal Dictionary<String, String> variables = new Dictionary<String, String>();
-        public async Task commandInterpreter(SocketCommandContext context, String commandPassed)
+        public async Task commandInterpreter(SocketCommandContext context, String commandPassed, String[] passedArgs)
         {
             variables = new Dictionary<String, String>();
-            String[] strings = commandPassed.Split(" ");
+            int argnum = 0;
+            foreach (String argument in passedArgs)
+            {
+                if (argnum == 0) { argnum = 1; continue; }
+                Console.WriteLine($"Adding argument {argnum} ({argument})");
+                variables.Add($"arg{argnum}", argument);
+                argnum++;
+            }
             foreach (NScriptInterpreter.fullCommand fullCommand in NScriptInterpreter.commands)
             {
                 if(fullCommand.commandName == commandPassed)
@@ -101,6 +108,47 @@ namespace NDB.Library.NScript
                                         messageToSay = variables[(string)commandLine.value];
                                     }
                                     await user.SendMessageAsync(messageToDM);
+                                    break;
+                                case "random":
+                                    List<Object> args = (List<object>)commandLine.value;
+                                    if (variables.ContainsKey(args[0].ToString()) == false)
+                                    {
+                                        Console.WriteLine("Script attempted to write to argument before setting it.");
+                                    } else
+                                    {
+                                        int safeLow;
+                                        int safeHigh;
+                                        if (Int32.TryParse(args[1].ToString(), out safeLow) == false)
+                                        {
+                                            String safeLowStr;
+                                            if (variables.TryGetValue(args[1].ToString(), out safeLowStr) == false)
+                                            {
+                                                Console.WriteLine("Script provided invalid 'Low' number.");
+                                                break;
+                                            }
+                                            if (Int32.TryParse(safeLowStr, out safeLow) == false)
+                                            {
+                                                Console.WriteLine("Script provided 'Low' number from a variable which wasn't an integer.");
+                                                break;
+                                            }
+                                        }
+                                        if (Int32.TryParse(args[2].ToString(), out safeHigh) == false)
+                                        {
+                                            String safeHighStr;
+                                            if (variables.TryGetValue(args[2].ToString(), out safeHighStr) == false)
+                                            {
+                                                Console.WriteLine("Script provided invalid 'High' number.");
+                                                break;
+                                            }
+                                            if (Int32.TryParse(safeHighStr, out safeHigh) == false)
+                                            {
+                                                Console.WriteLine(safeHighStr);
+                                                Console.WriteLine("Script provided 'High' number from a variable which wasn't an integer.");
+                                                break;
+                                            }
+                                        }
+                                        variables[args[0].ToString()] = Random.Shared.Next(safeLow, safeHigh).ToString();
+                                    }
                                     break;
                                 default:
                                     break;

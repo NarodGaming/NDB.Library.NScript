@@ -13,7 +13,7 @@ namespace NDB.Library.NScript
             {
                 Console.WriteLine(scriptLine);
                 if (scriptLine.StartsWith(" ") || scriptLine == "") { continue; } // skip empty lines or lines starting with spaces
-                String[] scriptLineSpaced = Regex.Split(scriptLine, @"\s+(?=(?:[^""]*""[^""]*"")*[^""]*$)"); // split by spaces but preserve quoted strings
+                String[] scriptLineSpaced = Regex.Split(scriptLine, @"\s+(?=(?:[^""]*""[^""]*"")*[^""]*$)(?=(?:[^\[\]]*\[[^\[\]]*\])*[^\[\]]*$)"); // split by spaces but preserve quoted strings
                 NScriptCommand command = new NScriptCommand();
                 command.key = scriptLineSpaced[0];
                 object fullValue = null;
