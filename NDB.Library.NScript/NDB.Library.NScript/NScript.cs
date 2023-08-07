@@ -61,7 +61,14 @@ namespace NDB.Library.NScript
                     fullValueType = NScriptValueType.List; // set the type to list
                 } else
                 {
-                    fullValueType = NScriptValueType.String; // we will assume that it is a string
+                    bool isCommand = Regex.IsMatch(fullValue.ToString(), @"^[a-zA-Z.]+\([^\(\)]*\)$");
+                    if (isCommand)
+                    {
+                        fullValueType = NScriptValueType.Command;
+                    } else
+                    {
+                        fullValueType = NScriptValueType.String; // we will assume that it is a string
+                    }
                 }
 
                 Console.WriteLine(fullValue);
@@ -113,6 +120,7 @@ namespace NDB.Library.NScript
 
     public enum NScriptValueType // list of supported nscript value types
     {
+        Command, // regex will check if it's a command or not
         String,
         Int,
         Float,
@@ -126,5 +134,11 @@ namespace NDB.Library.NScript
         public NScriptValueType type;
         public String key;
         public String action;
+    }
+
+    public struct ActionResponse
+    {
+        public object valueReturned;
+        public Dictionary<String, String> variablesReturned;
     }
 }
