@@ -78,7 +78,7 @@ namespace NDB.Library.NScript
                     String[] listElements = fullValue.ToString().Trim('[', ']').Split(','); // split by commas and remove brackets
                     foreach (String element in listElements)
                     {
-                        listValue.Add(element.Trim()); // add each element to the list after trimming spaces
+                        listValue.Add(element.Trim().Trim('"')); // add each element to the list after trimming spaces & quotes
                     }
                     fullValue = listValue; // assign the list value
                     fullValueType = NScriptValueType.List; // set the type to list
