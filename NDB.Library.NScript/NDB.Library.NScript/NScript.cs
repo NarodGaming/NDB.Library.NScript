@@ -74,7 +74,7 @@ namespace NDB.Library.NScript
                 }
                 else if (fullValue.ToString().StartsWith("[") && fullValue.ToString().EndsWith("]"))
                 {
-                    List<object> listValue = new List<object>(); // create a new list object
+                    List<string> listValue = new List<string>(); // create a new list object
                     String[] listElements = fullValue.ToString().Trim('[', ']').Split(','); // split by commas and remove brackets
                     foreach (String element in listElements)
                     {
@@ -165,6 +165,6 @@ namespace NDB.Library.NScript
     public struct ActionResponse
     {
         public object valueReturned;
-        public Dictionary<String, String> variablesReturned;
+        public Dictionary<String, Object> variablesReturned;
     }
 }

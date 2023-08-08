@@ -47,10 +47,10 @@ namespace NDB.Library.NScript
 
     public class NScriptCommandInterpreter
     {
-        internal Dictionary<String, String> variables = new Dictionary<String, String>();
+        internal Dictionary<String, Object> variables = new Dictionary<String, Object>();
         public async Task commandInterpreter(SocketCommandContext context, String commandPassed, String[] passedArgs)
         {
-            variables = new Dictionary<String, String>();
+            variables = new Dictionary<String, Object>();
             int argnum = 0;
             foreach (String argument in passedArgs)
             {
@@ -82,12 +82,20 @@ namespace NDB.Library.NScript
                             {
                                 if(commandLine.type == NScriptValueType.Command)
                                 {
+                                    Console.WriteLine($"{commandLine.action} {commandLine.key} {commandLine.type}");
                                     ActionResponse actionresp = actionInterpreter(commandLine, variables, context);
                                     variables = actionresp.variablesReturned;
                                     variables[commandLine.key] = actionresp.valueReturned.ToString();
                                 } else
                                 {
-                                    variables[commandLine.key] = (string)commandLine.value;
+                                    try
+                                    {
+                                        variables[commandLine.key] = (string)commandLine.value;
+                                    }
+                                    catch (InvalidCastException)
+                                    {
+                                        variables[commandLine.key] = (List<String>)commandLine.value;
+                                    }
                                 }
                             }
                         } else if (commandLine.action == "do") // command to complete (e.g. say text)
@@ -205,14 +213,14 @@ namespace NDB.Library.NScript
                                 firstArg = conditionToCheck[0].Trim('"');
                             } else
                             {
-                                firstArg = variables[conditionToCheck[0]];
+                                firstArg = (string)variables[conditionToCheck[0]];
                             }
                             if (conditionToCheck[2].StartsWith('"'))
                             {
                                 secondArg = conditionToCheck[2].Trim('"');
                             } else
                             {
-                                secondArg = variables[conditionToCheck[2]];
+                                secondArg = (string)variables[conditionToCheck[2]];
                             }
 
                             if(comparisonType == "=")
@@ -237,7 +245,7 @@ namespace NDB.Library.NScript
             }
         }
 
-        public ActionResponse actionInterpreter(NScriptCommand command, Dictionary<String, String> variables, SocketCommandContext context)
+        public ActionResponse actionInterpreter(NScriptCommand command, Dictionary<String, Object> variables, SocketCommandContext context)
         {
             string commandName = ((String)command.value).Split('(')[0]; // gets the command name (everything before the first bracket open)
             string argsPassed = ((String)command.value).Substring(((String)command.value).IndexOf("(")+1);
@@ -249,7 +257,7 @@ namespace NDB.Library.NScript
                 if (arg.StartsWith("arg"))
                 {
                     Console.WriteLine($"Added arg to args list {variables[arg]}");
-                    args.Add(variables[arg]);
+                    args.Add((string)variables[arg]);
                 } else
                 {
                     Console.WriteLine($"Added literal to args list {arg}");
@@ -264,13 +272,13 @@ namespace NDB.Library.NScript
                     int safeHigh;
                     if (Int32.TryParse(args[0].ToString(), out safeLow) == false)
                     {
-                        String safeLowStr;
+                        Object safeLowStr;
                         if (variables.TryGetValue(args[0].ToString(), out safeLowStr) == false)
                         {
                             Console.WriteLine("Script provided invalid 'Low' number.");
                             break;
                         }
-                        if (Int32.TryParse(safeLowStr, out safeLow) == false)
+                        if (Int32.TryParse((string)safeLowStr, out safeLow) == false)
                         {
                             Console.WriteLine("Script provided 'Low' number from a variable which wasn't an integer.");
                             break;
@@ -278,13 +286,13 @@ namespace NDB.Library.NScript
                     }
                     if (Int32.TryParse(args[1].ToString(), out safeHigh) == false)
                     {
-                        String safeHighStr;
+                        Object safeHighStr;
                         if (variables.TryGetValue(args[1].ToString(), out safeHighStr) == false)
                         {
                             Console.WriteLine("Script provided invalid 'High' number.");
                             break;
                         }
-                        if (Int32.TryParse(safeHighStr, out safeHigh) == false)
+                        if (Int32.TryParse((string)safeHighStr, out safeHigh) == false)
                         {
                             Console.WriteLine(safeHighStr);
                             Console.WriteLine("Script provided 'High' number from a variable which wasn't an integer.");
@@ -312,6 +320,45 @@ namespace NDB.Library.NScript
                     response.variablesReturned = variables;
                     return response;
                 default:
+                    if (commandName.Contains('.')) // this could be trying to run a command off a variable, let's check!
+                    {
+                        string possVariableName = commandName.Split('.')[0];
+                        string possActionName = commandName.Split('.')[1];
+                        if (variables.ContainsKey(possVariableName)) // we are talking about a variable here
+                        {
+                            switch (possActionName)
+                            {
+                                case "length":
+                                    response.valueReturned = ((List<String>)variables[possVariableName]).Count;
+                                    response.variablesReturned = variables;
+                                    return response;
+                                default:
+                                    break;
+                            }
+                        }
+                    } else // we might be trying to fetch an array item, let's check!
+                    {
+                        if (variables.ContainsKey(commandName))
+                        {
+                            Object indexPos;
+                            int safeIndexPos;
+                            if (variables.TryGetValue(args[0].ToString(), out indexPos) == false)
+                            {
+                                Console.WriteLine("Invalid index position!");
+                                break;
+                            }
+                            if (Int32.TryParse((string)indexPos, out safeIndexPos) == false)
+                            {
+                                Console.WriteLine(indexPos);
+                                Console.WriteLine("Index position was not an integer / number.");
+                                break;
+                            }
+
+                            response.valueReturned = ((List<string>)variables[commandName])[safeIndexPos];
+                            response.variablesReturned = variables;
+                            return response;
+                        }
+                    }
                     break;
             }
             Console.WriteLine("Action Interpreter was run, but none of the commands matched!");
