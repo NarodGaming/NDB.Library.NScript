@@ -1,4 +1,4 @@
-# NDB.Library.NScript - A NScript Parser & Interpreter (for Discord.NET Bots)
+# An NScript Parser & Interpreter for Discord.NET Bots
 
 NDB.Library.NScript (Beta) is an experimental but functional way of writing Discord bot commands in the custom language of NScript.
 
