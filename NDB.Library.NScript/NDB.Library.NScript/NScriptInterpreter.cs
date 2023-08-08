@@ -63,8 +63,12 @@ namespace NDB.Library.NScript
             {
                 if(fullCommand.commandName == commandPassed)
                 {
+                    bool conditionalPassed = false;
+                    bool isInIf = false;
                     foreach (NScriptCommand commandLine in fullCommand.scriptCommands)
                     {
+                        if (isInIf && !conditionalPassed && commandLine.action != "endif") { Console.WriteLine("Skipping failed conditional command.");  continue; } // means that if we're in an if code block, but the condition failed, do not run and skip
+                        if (isInIf && conditionalPassed) { Console.WriteLine(commandLine.key); }
                         if(commandLine.action == "set") // command with equals (e.g. text = test123)
                         {
                             if (commandLine.key == null)
@@ -146,7 +150,7 @@ namespace NDB.Library.NScript
                                     }
                                     catch (Exception)
                                     {
-                                        Console.WriteLine("Warning! Failed to cast conversion at say:try1 - probably not a string.");
+                                        Console.WriteLine("Warning! Failed to cast conversion at embedsay:try1 - probably not a string.");
                                     }
                                     if (embedToSay is not IList)
                                     {
@@ -189,6 +193,43 @@ namespace NDB.Library.NScript
                                     await user.SendMessageAsync(messageToDM);
                                     break;
                             }
+                        } else if (commandLine.action == "if")
+                        {
+                            isInIf = true;
+                            string[] conditionToCheck = ((string)commandLine.value).Split(' ');
+                            string firstArg;
+                            string comparisonType = conditionToCheck[1];
+                            string secondArg;
+                            if (conditionToCheck[0].StartsWith('"')) // if the first condition is a string
+                            {
+                                firstArg = conditionToCheck[0].Trim('"');
+                            } else
+                            {
+                                firstArg = variables[conditionToCheck[0]];
+                            }
+                            if (conditionToCheck[2].StartsWith('"'))
+                            {
+                                secondArg = conditionToCheck[2].Trim('"');
+                            } else
+                            {
+                                secondArg = variables[conditionToCheck[2]];
+                            }
+
+                            if(comparisonType == "=")
+                            {
+                                if (firstArg == secondArg)
+                                {
+                                    conditionalPassed = true;
+                                } else
+                                {
+                                    conditionalPassed = false;
+                                }
+                                Console.WriteLine($"Conditional ran: {conditionalPassed}");
+                            }
+                        } else if (commandLine.action == "endif")
+                        {
+                            isInIf = false;
+                            conditionalPassed = false;
                         }
                     }
                     break;

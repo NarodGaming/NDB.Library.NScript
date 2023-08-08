@@ -9,19 +9,42 @@ namespace NDB.Library.NScript
         {
             List<String> requiredFields = new List<string>() { "command", "summary", "remarks" };
             List<NScriptCommand> commands = new List<NScriptCommand>();
+            bool inCodeBlock = false;
             foreach (String scriptLine in scriptText)
             {
                 Console.WriteLine(scriptLine);
-                if (scriptLine.StartsWith(" ") || scriptLine == "") { continue; } // skip empty lines or lines starting with spaces
-                String[] scriptLineSpaced = Regex.Split(scriptLine, @"\s+(?=(?:[^""]*""[^""]*"")*[^""]*$)(?=(?:[^\[\]]*\[[^\[\]]*\])*[^\[\]]*$)"); // split by spaces but preserve quoted strings
+                if (scriptLine.Trim() == "" || scriptLine == "") { continue; } // skip empty lines
+                String cleanScriptLine = scriptLine.Trim(); // remove starting and ending whitespace, otherwise the regex below gets f*cked up!
+                String[] scriptLineSpaced = Regex.Split(cleanScriptLine, @"\s+(?=(?:[^""]*""[^""]*"")*[^""]*$)(?=(?:[^\[\]]*\[[^\[\]]*\])*[^\[\]]*$)"); // split by spaces but preserve quoted strings
                 NScriptCommand command = new NScriptCommand();
                 command.key = scriptLineSpaced[0];
                 object fullValue = null;
                 NScriptValueType fullValueType = NScriptValueType.String;
+                if (scriptLine == "endif")
+                {
+                    command.action = "endif";
+                    command.value = "";
+                    command.inCodeBlock = false;
+                    inCodeBlock = false;
+                    command.type = NScriptValueType.Conditional;
+                    commands.Add(command);
+                    continue;
+                }
                 if (scriptLineSpaced[1].Contains("="))
                 {
                     command.action = "set";
                     fullValue = scriptLineSpaced[2]; // get the second part as the value
+                } else if (command.key == "if")
+                {
+                    command.action = "if";
+                    fullValue = cleanScriptLine.Substring(cleanScriptLine.IndexOf("{") + 1).TrimEnd('}'); // so this should look something like 'username = "Narod"'
+                    fullValueType = NScriptValueType.Conditional;
+                    command.value = fullValue;
+                    command.type = fullValueType;
+                    inCodeBlock = true;
+                    command.inCodeBlock = false;
+                    commands.Add(command);
+                    continue; // if statements work differently, we don't need to run any further code
                 }
                 else
                 {
@@ -74,6 +97,7 @@ namespace NDB.Library.NScript
                 Console.WriteLine(fullValue);
                 command.value = fullValue;
                 command.type = fullValueType;
+                command.inCodeBlock = inCodeBlock;
                 commands.Add(command);
             }
             foreach (NScriptCommand nScriptCommand in commands)
@@ -121,6 +145,7 @@ namespace NDB.Library.NScript
     public enum NScriptValueType // list of supported nscript value types
     {
         Command, // regex will check if it's a command or not
+        Conditional, // used for IF statements
         String,
         Int,
         Float,
@@ -134,6 +159,7 @@ namespace NDB.Library.NScript
         public NScriptValueType type;
         public String key;
         public String action;
+        public bool inCodeBlock; // used if it's within a conditional or something else. the interpreter will know to only run this if the previous conditional check succeeded until it hits an end-if
     }
 
     public struct ActionResponse
