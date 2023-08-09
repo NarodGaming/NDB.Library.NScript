@@ -2,7 +2,13 @@
 
 NDB.Library.NScript (Beta) is an experimental but functional way of writing Discord bot commands in the custom language of NScript.
 
-This specific library is written for the NDB bot, however it should be compatible with all Discord.NET written bots on .NET 6.0 and higher.
+This specific library is written for the [NDB.Main](https://github.com/NarodGaming/NDB.Main) bot, however it should be compatible with all Discord.NET written bots on .NET 6.0 and higher.
+
+## Quick Start
+
+Read the 'How do I use this library?' heading.
+
+Afterwards, either read the wiki, or take a look at the examples folder for some example NScripts.
 
 ## What is NScript?
 
@@ -14,7 +20,7 @@ Want to know all compatible NScript commands supported by this library & learn m
 
 ## How do I use this library?
 
-If you're using NDB & NDB.Loader:
+If you're using NDB & [NDB.Loader](https://github.com/NarodGaming/NDB.Loader):
 
 1. Download (or compile) this library.
 2. Place it in the same folder as your NDB.Main executable.

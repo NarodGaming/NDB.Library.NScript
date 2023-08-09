@@ -1,0 +1,17 @@
+command = "joke"
+summary = "A script to send a random joke to the channel."
+remarks = "joke"
+
+var jokes
+var joke
+var index
+var length
+
+jokes = ["What do you call a fish wearing a bowtie? Sofishticated.", "How do you make a tissue dance? You put a little boogie in it.", "What do you call cheese that isn’t yours? Nacho cheese.", "Why did the math book look so sad? Because of all of its problems.", "What do you get when you cross a snowman with a vampire? Frostbite."]
+
+length = jokes.length()
+index = random(0,length)
+joke = jokes(index)
+
+say joke
+

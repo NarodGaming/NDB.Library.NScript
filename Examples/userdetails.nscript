@@ -1,0 +1,19 @@
+command = "userdetails"
+summary = "A script to fetch user details of a Discord user"
+remarks = "userdetails <discord user mention>"
+
+var guildname
+var username
+var userjoinedat
+var usercreatedat
+
+guildname = context.guildname()
+username = arg.username()
+userjoinedat = arg.userjoinedat()
+usercreatedat = arg.usercreatedat()
+
+if {guildname = "My House"}
+	say "This house is nice!"
+endif
+
+embedsay ["The user ",username," - created on ",usercreatedat," - joined ",guildname," on ",userjoinedat]

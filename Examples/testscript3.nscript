@@ -1,0 +1,8 @@
+command = "randomnumber"
+summary = "This is a test file created in NScript (v3)"
+remarks = "randomnumber"
+
+var number
+say "I'm going to tell you a random number between 1 and your chosen number!"
+number = random(0,arg1)
+say number
