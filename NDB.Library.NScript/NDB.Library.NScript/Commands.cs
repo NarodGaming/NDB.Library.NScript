@@ -1,15 +1,10 @@
 ﻿using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NDB.Library.NScript
 {
     public class NScriptCommands : ModuleBase<SocketCommandContext>
     {
-        private NScript nscriptHandler = new();
+        private NScript nscriptHandler = new(); // nscript handler which carries most of the functions out
 
 
         [Command("scriptload")]
@@ -19,7 +14,7 @@ namespace NDB.Library.NScript
         {
             ReplyAsync($"Loading {fileName}");
             String[] scriptFile = File.ReadAllLines(fileName);
-            if (nscriptHandler.readScript(scriptFile))
+            if (nscriptHandler.readScript(scriptFile)) // if it was successful in reading the script in
             {
                 return ReplyAsync($"Finished loading {fileName}");
             } else
@@ -32,9 +27,9 @@ namespace NDB.Library.NScript
         [Alias("loadedscripts", "scripts")]
         [Summary("Shows all loaded scripts.")]
         [Remarks("scriptsloaded")]
-        public Task showScripts()
+        public Task showScripts() // will print out all scripts that are loaded in
         {
-            String combineMessage = "These are the loaded scripts:" + Environment.NewLine;
+            String combineMessage = "These are the loaded scripts:" + Environment.NewLine; 
             foreach (String command in NScriptInterpreter.fastCommands)
             {
                 combineMessage += command + Environment.NewLine;

@@ -1,14 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Commands.Builders;
-using Discord.Interactions.Builders;
 using Discord.WebSocket;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NDB.Library.NScript
 {
